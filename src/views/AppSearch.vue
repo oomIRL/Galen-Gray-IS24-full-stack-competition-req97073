@@ -1,12 +1,12 @@
 <template>
   <NavBar />
-  <div class="home">
+  <div class="search">
     <div v-if="err">{{ err }}</div>
-    <div v-if="apps.length">
-      Catalog Size: {{ apps.length }}
-      <AppList :apps="apps" />
+    <input type="text" v-model="search">
+    <p> Scrum Master Search (case-sensitive btw) - {{ search }}</p>
+    <div v-if="matching.length">
+      <AppList :apps="matching" />
     </div>
-    <div v-else>Loading...</div>
   </div>
 </template>
 
@@ -14,17 +14,23 @@
 import getApps from '../composables/getApps'
 import AppList from '../components/AppList.vue'
 import NavBar from '../components/NavBar.vue'
+import { computed, ref } from 'vue'
 
 export default {
   name: 'HomeView',
   components: { AppList, NavBar },
   setup() {
+    const search = ref([])
     const { apps, err, fill } = getApps()
 
-    // get all the apps from the api server
+    // get all apps from api server
     fill()
 
-    return { apps, err }
+    // filter down the list to those where Scrum Master includes search term
+    const matching = computed(() => {
+         return apps.value.filter((x) => x.scrum.includes(search.value))
+    })
+    return { apps, err, search, matching }
   }
 }
 </script>
